@@ -2,6 +2,8 @@ import { React, useState, useEffect } from "react";
 import Search from "./components/Search";
 import movieIcon from "./components/images/movies.png";
 import axios from "axios";
+import Loader from "./components/Loader";
+import MovieCard from "./components/MovieCard";
 
 const API_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -14,7 +16,7 @@ const App = () => {
   const [searchMovie, setSearchMovie] = useState("");
   const [error, setError] = useState("");
   const [movieList, setMovieList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchMovies = async () => {
     setLoading(true);
@@ -41,7 +43,7 @@ const App = () => {
       console.log(e);
       setError(`Error fetching movies!`);
     } finally {
-      setLoading(true);
+      setLoading(false);
     }
   };
 
@@ -63,17 +65,15 @@ const App = () => {
           </header>
           <Search searchMovie={searchMovie} setSearchMovie={setSearchMovie} />
           <section className="all movies">
-            <h2>All Movies</h2>
+            <h2 className="mt-[20px]">All Movies</h2>
             {loading ? (
-              <p className="text-white">Loading...</p>
+              <Loader />
             ) : error ? (
               <p className="text-red-500">{error}</p>
             ) : (
               <ul>
                 {movieList.map((movie) => (
-                  <p key={movie.id} className="text-white">
-                    {movie.title}
-                  </p>
+                  <MovieCard key={movie.id} movie={movie} />
                 ))}
               </ul>
             )}
