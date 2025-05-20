@@ -47,7 +47,9 @@ const App = () => {
 
       setMovieList(data.results || []);
 
-      updateSearchCount();
+      if (query && data.results.length > 0) {
+        await updateSearchCount(query, data.results[0]);
+      }
     } catch (e) {
       console.log(e);
       setError(`Error fetching movies!`);
