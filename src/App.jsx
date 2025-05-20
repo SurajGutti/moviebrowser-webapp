@@ -1,9 +1,11 @@
 import { React, useState, useEffect } from "react";
+import { useDebounce } from "react-use";
 import Search from "./components/Search";
 import movieIcon from "./components/images/movies.png";
 import axios from "axios";
 import Loader from "./components/Loader";
 import MovieCard from "./components/MovieCard";
+import { updateSearchCount } from "./appwrite";
 
 const API_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -17,13 +19,18 @@ const App = () => {
   const [error, setError] = useState("");
   const [movieList, setMovieList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [debouncedSearchMovie, setDebouncedSearchMovie] = useState("");
 
-  const fetchMovies = async () => {
+  useDebounce(() => setDebouncedSearchMovie(searchMovie), 500, [searchMovie]);
+
+  const fetchMovies = async (query = "") => {
     setLoading(true);
     setError("");
 
     try {
-      const endpoint = `${API_URL}/discover/movie?sort_by=popularity.desc`;
+      const endpoint = query
+        ? `${API_URL}/search/movie?query=${encodeURIComponent(query)}`
+        : `${API_URL}/discover/movie?sort_by=popularity.desc`;
 
       const response = await axios.get(endpoint, API_OPTIONS);
 
@@ -39,6 +46,8 @@ const App = () => {
       }
 
       setMovieList(data.results || []);
+
+      updateSearchCount();
     } catch (e) {
       console.log(e);
       setError(`Error fetching movies!`);
@@ -48,8 +57,8 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchMovies();
-  }, []);
+    fetchMovies(debouncedSearchMovie);
+  }, [debouncedSearchMovie]);
 
   return (
     <>
