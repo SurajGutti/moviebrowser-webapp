@@ -34,3 +34,16 @@ export const updateSearchCount = async (searchTerm, movie) => {
 
     //3. If not create a new term
 }
+
+export const getTrendingMovies = async () => {
+    try{
+        const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
+            Query.limit(5),
+            Query.orderDesc("count")
+        ])
+
+        return result.documents;
+    } catch (e) {
+        console.log(e);
+    }
+}

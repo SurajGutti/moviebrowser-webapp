@@ -5,7 +5,7 @@ import movieIcon from "./components/images/movies.png";
 import axios from "axios";
 import Loader from "./components/Loader";
 import MovieCard from "./components/MovieCard";
-import { updateSearchCount } from "./appwrite";
+import { getTrendingMovies, updateSearchCount } from "./appwrite";
 
 const API_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -20,6 +20,7 @@ const App = () => {
   const [movieList, setMovieList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [debouncedSearchMovie, setDebouncedSearchMovie] = useState("");
+  const [trendingMovies, setTrendingMovies] = useState([]);
 
   useDebounce(() => setDebouncedSearchMovie(searchMovie), 500, [searchMovie]);
 
@@ -58,9 +59,22 @@ const App = () => {
     }
   };
 
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await getTrendingMovies();
+      setTrendingMovies(movies);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   useEffect(() => {
     fetchMovies(debouncedSearchMovie);
   }, [debouncedSearchMovie]);
+
+  useEffect(() => {
+    loadTrendingMovies();
+  }, []);
 
   return (
     <>
@@ -74,18 +88,33 @@ const App = () => {
               here!
             </h1>
           </header>
+          {trendingMovies.length > 0 && (
+            <section className="trending">
+              <h2>Trending Movies</h2>
+              <ul>
+                {trendingMovies.map((movie, index) => (
+                  <li key={movie.$id}>
+                    <p>{index + 1}</p>
+                    <img src={movie.poster_url} alt={movie.title} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <Search searchMovie={searchMovie} setSearchMovie={setSearchMovie} />
           <section className="all movies">
-            <h2 className="mt-[20px]">All Movies</h2>
+            <h2>All Movies</h2>
             {loading ? (
               <Loader />
             ) : error ? (
               <p className="text-red-500">{error}</p>
             ) : (
               <ul>
-                {movieList.map((movie) => (
-                  <MovieCard key={movie.id} movie={movie} />
-                ))}
+                <li>
+                  {movieList.map((movie) => (
+                    <MovieCard key={movie.id} movie={movie} />
+                  ))}
+                </li>
               </ul>
             )}
           </section>
